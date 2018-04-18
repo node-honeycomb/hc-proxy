@@ -23,6 +23,9 @@ const clients  = {
 const methods = ['GET', 'POST', 'DELETE', 'PUT'];
 
 const HcProxy = function (options) {
+  if (!options.service) {
+    throw '[hc-proxy]: options.service is needed in options.';
+  }
   this.proxyRules = options.service || {};
   this.proxyHeaders = options.headers || [];
   this.proxyPrefix = '/api/proxy';
