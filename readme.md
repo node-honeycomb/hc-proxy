@@ -211,10 +211,10 @@ options.service 详情
 
 client=[appClient/serviceClient]的专属配置
 
-- headers: 选填，同 hc-service-client 配置，见文档: http://web.npm.alibaba-inc.com/package/hc-service-client
-- accessKeyId: 选填，同 hc-service-client 配置，默认 'hc-proxy'，详见 http://web.npm.alibaba-inc.com/package/hc-service-client
-- accessKeySecret: 同 hc-service-client 配置，必填，不填时取 app.config.systemToken，详见http://web.npm.alibaba-inc.com/package/hc-service-client
-- headerExtension:  同 hc-service-client 配置，见文档: http://web.npm.alibaba-inc.com/package/hc-service-client
+- headers: 选填，同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client
+- accessKeyId: 选填，同 hc-service-client 配置，默认 'hc-proxy'，详见 https://www.npmjs.com/package/hc-service-client
+- accessKeySecret: 同 hc-service-client 配置，必填，不填时取 app.config.systemToken，详见 https://www.npmjs.com/package/hc-service-client
+- headerExtension:  同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client
 
 #### options.headers Array<string>
 
