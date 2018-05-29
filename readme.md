@@ -124,11 +124,11 @@ const proxyInstance = new Proxy({
       client: 'http',
       api: [
         {
-          url: '/api/upload',
+          path: '/api/upload',
           file: true
         },
         {
-          url: '/api/upload_limited',
+          path: '/api/upload_limited',
           file: {
             maxFileSize: 100        // 100B
           }
