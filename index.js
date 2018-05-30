@@ -5,6 +5,7 @@ const http = require('http');
 const url = require('url');
 const multer = require('multer');
 const debug = require('debug')('hc-proxy');
+const utils = require('./lib/utils');
 
 function trim (url) {
   if (_.endsWith(url, '/')) {
@@ -24,7 +25,7 @@ const methods = ['GET', 'POST', 'DELETE', 'PUT'];
 
 const HcProxy = function (options) {
   if (!options.service) {
-    throw '[hc-proxy]: options.service is needed in options.';
+    throw utils.errorWrapper('[hc-proxy]: options.service is needed in options.');
   }
   this.proxyRules = options.service || {};
   this.proxyHeaders = options.headers || [];
@@ -33,17 +34,17 @@ const HcProxy = function (options) {
 
 HcProxy.prototype.setProxyPrefix = function (proxyPrefix) {
   if (typeof proxyPrefix !== 'string') {
-    throw 'fault [hc-proxy]: setProxyPrefix only accept a string parameter, got: ' + proxyPrefix;
+    throw utils.errorWrapper('[hc-proxy]: setProxyPrefix only accept a string parameter, got: ' + proxyPrefix);
   }
   this.proxyPrefix = proxyPrefix;
 };
 
 HcProxy.prototype.mount = function (router, app) {
   if (!router) {
-    throw 'fault [hc-proxy]: mount method should have `router`, but got one: ' + router;
+    throw utils.errorWrapper('[hc-proxy]: mount method should have `router`, but got one: ' + router);
   }
   if (!app) {
-    throw 'fault [hc-proxy]: mount method should have two arguments `router`、`app`, but got one: ' + arguments;
+    throw utils.errorWrapper('[hc-proxy]: mount method should have two arguments `router`、`app`, but got one: ' + arguments);
   }
   const proxyRules = this.proxyRules;
   const proxyHeaders = this.proxyHeaders ? this.proxyHeaders : [];
@@ -75,7 +76,7 @@ HcProxy.prototype.mount = function (router, app) {
       let method = u.method;
       let endpoint = u.endpoint || u.endPoint || u.host || service.endpoint || service.endPoint || '';
       if (!endpoint) {
-        throw `[hc-proxy]: endpoint should not be empty, service: ${k}`;
+        throw utils.errorWrapper(`[hc-proxy]: endpoint should not be empty, service: ${k}`);
       }
 
       let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
@@ -194,7 +195,7 @@ HcProxy.prototype.mount = function (router, app) {
     }
  
     if (!app) {
-      throw new Error('使用websocket时请传入 honeybee app 实例:  dtboostProxy(router, app);');
+      throw utils.errorWrapper('[hc-proxy]: 使用websocket时请传入 honeybee app 实例:  dtboostProxy(router, app);');
     }
  
     if (app.server) {

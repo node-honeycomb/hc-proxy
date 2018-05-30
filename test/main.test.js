@@ -18,7 +18,7 @@ describe('开始测试', function () {
         try {
           proxyInstance = errorProxy.start(httpPort);
         } catch (e) {
-          assert(e === '[hc-proxy]: endpoint should not be empty, service: app_client');
+          assert(e.message === '[hc-proxy]: endpoint should not be empty, service: app_client');
           done();
         }
       });
