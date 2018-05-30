@@ -92,6 +92,9 @@ HcProxy.prototype.mount = function (router, app) {
       let headers = u.headers || service.headers;
       let log = app && app.getLog() || console;
       let file = u.file || false;
+      let useQuerystringInDelete = !_.isNil(service.useQuerystringInDelete) ? !!service.useQuerystringInDelete :
+        !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
+      let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
 
       return {
         serviceName,
@@ -108,7 +111,9 @@ HcProxy.prototype.mount = function (router, app) {
         headers,
         serviceCfg: service,
         log,
-        file
+        file,
+        useQuerystringInDelete,
+        urllibOption
       };
     }).map(u => {
       let serviceName = u.serviceName;

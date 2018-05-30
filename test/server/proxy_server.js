@@ -46,6 +46,18 @@ exports.start = (port, callback) => {
             path: '/query'
           },
           {
+            path: '/query_delete_param_in_body',
+            useQuerystringInDelete: false
+          },
+          {
+            path: '/query_urllib_option',
+            method: 'delete',
+            useQuerystringInDelete: false,
+            urllibOption: {
+              dataAsQueryString: true
+            }
+          },
+          {
             path: '/query_star/*'
           },
           {
@@ -99,8 +111,28 @@ exports.start = (port, callback) => {
         app.post(route, processor);
       }
     },
-    put: () => {},
-    delete: () => {}
+    put: (route, processor, isWrapper) => {
+      if (isWrapper) {
+        app.put(route, function (req, res) {
+          processor(req, (err, response) => {
+            response.pipe(res);
+          });
+        });
+      } else {
+        app.put(route, processor);
+      }
+    },
+    delete: (route, processor, isWrapper) => {
+      if (isWrapper) {
+        app.delete(route, function (req, res) {
+          processor(req, (err, response) => {
+            response.pipe(res);
+          });
+        });
+      } else {
+        app.delete(route, processor);
+      }
+    }
   }, {
     server,
     options: {
