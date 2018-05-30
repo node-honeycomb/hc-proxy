@@ -144,12 +144,17 @@ HcProxy.prototype.mount = function (router, app) {
           } else {
             router[m.toLowerCase()](
               route,
-              multer({
-                storage: multer.memoryStorage(),
-                limits: {
-                  fileSize: _.get(file, 'maxFileSize')
+              function (req, res, next) {
+                if (req._readableState.ended) {
+                  return next();
                 }
-              }).any()
+                multer({
+                  storage: multer.memoryStorage(),
+                  limits: {
+                    fileSize: _.get(file, 'maxFileSize')
+                  }
+                }).any().apply(this, arguments);
+              }
             );
           }
         }
