@@ -111,8 +111,6 @@ module.exports = function (router) {
 
 ### 代理文件上传
 
-hc-proxy在1.3.0以后支持文件上传代理,使用方式如下:
-
 ```js
 // router.js
 const app = require('./app');

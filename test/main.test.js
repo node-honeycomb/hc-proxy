@@ -131,6 +131,56 @@ describe('开始测试', function () {
       });
     });
 
+    it('websocket with * in url', function (done) {
+      const options = {
+        port: proxyInstance.address().port,
+        hostname: 'localhost',
+        path: '/api/proxy/websocket/ws3/aaa',
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+      };
+
+      const req = http.request(options);
+      req.end();
+
+      req.on('upgrade', (res, socket, upgradeHead) => {
+        const testStr = 'ws3 test string!!!';
+        socket.on('data', function (data) {
+          assert(data.toString() === testStr);
+          socket.end();
+          done();
+        });
+        socket.write(testStr);
+      });
+    });
+
+    it('websocket with :id in url', function (done) {
+      const options = {
+        port: proxyInstance.address().port,
+        hostname: 'localhost',
+        path: '/api/proxy/websocket/ws2/123/test',
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+      };
+
+      const req = http.request(options);
+      req.end();
+
+      req.on('upgrade', (res, socket, upgradeHead) => {
+        const testStr = 'ws2 test string!!!';
+        socket.on('data', function (data) {
+          assert(data.toString() === testStr);
+          socket.end();
+          done();
+        });
+        socket.write(testStr);
+      });
+    });
+
     it('websocket', function (done) {
       const options = {
         port: proxyInstance.address().port,

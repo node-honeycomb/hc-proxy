@@ -4,8 +4,9 @@ const _ = require('lodash');
 const http = require('http');
 const url = require('url');
 const multer = require('multer');
-const debug = require('debug')('hc-proxy');
+const pathToRegexp = require('path-to-regexp');
 const utils = require('./lib/utils');
+const debug = require('debug')('hc-proxy');
 
 function trim (url) {
   if (_.endsWith(url, '/')) {
@@ -176,8 +177,22 @@ HcProxy.prototype.mount = function (router, app) {
       app.server.on('upgrade', function (req, socket, head) {
         const urlInfo = url.parse(req.url);
         const requestPath = req.url;
+        let path = '';
         const instance = wsHandler.reduce((origin, current) => {
-          if (app.options.prefix + current.route === urlInfo.pathname) {
+          let routeKeys = [];
+          let routePathGrep = pathToRegexp(app.options.prefix + current.route, routeKeys, utils.pathToRegexpOption);
+          const match = routePathGrep.exec(urlInfo.pathname);
+          if (match) {
+            path = current.path;
+            if (!req.params) {
+              req.params = {};
+            }
+            routeKeys.forEach((k, idx) => {
+              if (typeof k.name === 'string' && !req.params[k.name]) {
+                req.params[k.name] = match[idx + 1];
+              }
+            });
+            path = utils.processUrl(path, routeKeys, routePathGrep, req);
             return current;
           } else {
             return origin;
@@ -185,7 +200,7 @@ HcProxy.prototype.mount = function (router, app) {
         }, null);
 
         if (instance) {
-          instance.handler(req, socket, head, instance.path);
+          instance.handler(req, socket, head, path);
         } else {
           // 没有配置代理服务
           // socket.emit('error', new Error('Denied'));

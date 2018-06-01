@@ -80,7 +80,9 @@ exports.start = (port, callback) => {
           {
             path: '/ws1',
             defaultQuery: 'a=1&b=2&c=3'
-          }
+          },
+          '/ws2/:id/test',
+          '/ws3/*'
         ]
       }
     }
