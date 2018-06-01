@@ -180,7 +180,7 @@ HcProxy.prototype.mount = function (router, app) {
         let path = '';
         const instance = wsHandler.reduce((origin, current) => {
           let routeKeys = [];
-          let routePathGrep = pathToRegexp(app.options.prefix + current.route, routeKeys);
+          let routePathGrep = pathToRegexp(app.options.prefix + current.route, routeKeys, utils.pathToRegexpOption);
           const match = routePathGrep.exec(urlInfo.pathname);
           if (match) {
             path = current.path;
