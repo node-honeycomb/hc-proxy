@@ -5,6 +5,7 @@ const multer = require('multer');
 const upload = multer({
   storage: multer.memoryStorage()
 }).any();
+const debug = require('debug')('hc-proxy-debug');
 
 exports.start = function startServer(callback) {
   const server = http.createServer((req, res) => {

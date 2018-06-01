@@ -179,6 +179,8 @@ options.service 详情
     headers: ${headers},
     client: ${client},
     timeout: ${timeout},
+    useQuerystringInDelete: ${useQuerystringInDelete},    // 只有 appClient / urllib 模式有效
+    urllibOption: ${urllibOption},                        // 只有 appClient / urllib 模式有效
     api: [
       ${apiString},
       {
@@ -188,6 +190,8 @@ options.service 详情
         timeout: ${apiTimeout},
         defaultQuery: ${defaultQuery},
         beforeRequest: ${beforeRequest}, // TODO
+        useQuerystringInDelete: ${useQuerystringInDelete},
+        urllibOption: ${urllibOption}
       }
     ]
   }
@@ -208,6 +212,8 @@ options.service 详情
 - beforeRequest: 暂不支持
 - file: 配置上传文件，出现上传文件配置时，该接口支持上传文件，子配置使用默认值可以配置为 {... file: true}
   - maxFileSize: 上传文件的大小限制, 单位byte, default
+- useQuerystringInDelete: delete方法使用querystring代理, 默认为true
+- urllibOption: 用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置
 
 client=[appClient/serviceClient]的专属配置
 

@@ -6,6 +6,7 @@ const errorProxy = require('./server/error_proxy');
 const request = require('supertest');
 const http = require('http');
 const assert = require('assert');
+const debug = require('debug')('hc-proxy-test');
 
 describe('开始测试', function () {
   describe('error proxy', function () {
@@ -39,42 +40,42 @@ describe('开始测试', function () {
       });
     });
 
-    it ('urllib' , function (done) {
+    it('urllib' , function (done) {
       request(proxyInstance).get('/api/proxy/urllib_proxy/urllib').expect(200).end(function (err, res) {
         assert(res.text === '/urllib');
         done();
       });
     });
 
-    it ('urllib defaultQuery GET 1' , function (done) {
+    it('urllib defaultQuery GET 1' , function (done) {
       request(proxyInstance).get('/api/proxy/urllib_proxy/default_query?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/default_query?b=2&c=3&a=2');
         done();
       });
     });
 
-    it ('urllib defaultQuery GET 2' , function (done) {
+    it('urllib defaultQuery GET 2' , function (done) {
       request(proxyInstance).get('/api/proxy/urllib_proxy/default_query?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/default_query?b=2&c=3&a=2');
         done();
       });
     });
 
-    it ('urllib defaultQuery GET 3 without defaultParam' , function (done) {
+    it('urllib defaultQuery GET 3 without defaultParam' , function (done) {
       request(proxyInstance).get('/api/proxy/urllib_proxy/query?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/query?a=2');
         done();
       });
     });
 
-    it ('urllib defaultQuery GET 4 queryStar without defaultParam' , function (done) {
+    it('urllib defaultQuery GET 4 queryStar without defaultParam' , function (done) {
       request(proxyInstance).get('/api/proxy/urllib_proxy/query_star/xxx?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/query_star/xxx?a=2');
         done();
       });
     });
 
-    it ('urllib upload file', function (done) {
+    it('urllib upload file', function (done) {
       request(proxyInstance)
         .post('/api/proxy/urllib_proxy/upload')
         .field('tenantCode', 'dtboost')
@@ -85,7 +86,7 @@ describe('开始测试', function () {
         });
     });
 
-    it ('urllib upload file limited', function (done) {
+    it('urllib upload file limited', function (done) {
       request(proxyInstance)
         .post('/api/proxy/urllib_proxy/upload_limited')
         .field('tenantCode', 'dtboost')
@@ -95,21 +96,42 @@ describe('开始测试', function () {
         });
     });
 
-    it ('urllib defaultQuery POST 1' , function (done) {
+    it('urllib defaultQuery POST 1' , function (done) {
       request(proxyInstance).post('/api/proxy/urllib_proxy/default_query?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/default_query?a=2&b=2&c=3');
         done();
       });
     });
 
-    it ('urllib defaultQuery POST 2' , function (done) {
+    it('urllib defaultQuery POST 2' , function (done) {
       request(proxyInstance).post('/api/proxy/urllib_proxy/default_query?a=2').expect(200).end(function (err, res) {
         assert(res.text === '/default_query?a=2&b=2&c=3');
         done();
       });
     });
 
-    it ('websocket', function (done) {
+    it('delete method param should be in querystring.', function (done) {
+      request(proxyInstance).delete('/api/proxy/urllib_proxy/query?a=2&b=2&c=3').expect(200).end(function (err, res) {
+        assert(res.text === '/query?a=2&b=2&c=3');
+        done();
+      });
+    });
+
+    it('delete method param should not be in querystring.', function (done) {
+      request(proxyInstance).delete('/api/proxy/urllib_proxy/query_delete_param_in_body?a=2&b=2&c=3').expect(200).end(function (err, res) {
+        assert(res.text === '/query_delete_param_in_body');
+        done();
+      });
+    });
+
+    it('urllibOption should work.', function (done) {
+      request(proxyInstance).delete('/api/proxy/urllib_proxy/query_urllib_option?a=2&b=2&c=3').expect(200).end(function (err, res) {
+        assert(res.text === '/query_urllib_option?a=2&b=2&c=3');
+        done();
+      });
+    });
+
+    it('websocket', function (done) {
       const options = {
         port: proxyInstance.address().port,
         hostname: 'localhost',
@@ -134,7 +156,7 @@ describe('开始测试', function () {
       });
     });
 
-    it ('websocket with defaultQuery 1', function (done) {
+    it('websocket with defaultQuery 1', function (done) {
       const options = {
         port: proxyInstance.address().port,
         hostname: 'localhost',
@@ -159,7 +181,7 @@ describe('开始测试', function () {
       });
     });
 
-    it ('websocket with defaultQuery 2', function (done) {
+    it('websocket with defaultQuery 2', function (done) {
       const options = {
         port: proxyInstance.address().port,
         hostname: 'localhost',
@@ -184,7 +206,7 @@ describe('开始测试', function () {
       });
     });
 
-    it ('websocket wrong', function (done) {
+    it('websocket wrong', function (done) {
       const options = {
         port: proxyInstance.address().port,
         hostname: 'localhost',
@@ -202,7 +224,7 @@ describe('开始测试', function () {
       req.end();
     });
 
-    it ('azk service should be ok', function (done) {
+    it('azk service should be ok', function (done) {
       request(proxyInstance).get('/api/proxy/app_client/alg/categories').query({
         scopeId: 'dtboost',
         isPrivate: true,
@@ -216,7 +238,7 @@ describe('开始测试', function () {
       });
     });
 
-    it ('azk upload file api should be ok', function (done) {
+    it('azk upload file api should be ok', function (done) {
       request(proxyInstance)
         .post('/api/proxy/app_client/common/resource/add')
         .field('platform', 'ODPS')
