@@ -1,2 +1,3 @@
 1.0.2 check req stream ended when customer use multer.
 1.0.3 throw new Error() rather than string.
+delete param use querystring as default, useQuerystringInDelete & urllibOption support.
