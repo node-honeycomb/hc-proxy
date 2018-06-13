@@ -14,6 +14,7 @@ exports.start = function startServer(callback) {
         res.end(req.files.map(f => (f.originalname)).join(','));
       });
     } else {
+      console.log('req.headers[test-header]', req.headers['test-header']);
       res.end(req.url);
     }
   });

@@ -2,3 +2,4 @@
 1.0.3 throw new Error() rather than string.
 1.0.4 delete param use querystring as default, useQuerystringInDelete & urllibOption support.
       websocket mode support complex url.
+1.0.5 add headerExtension to `http` and `websocket` mode.

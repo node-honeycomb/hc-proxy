@@ -36,6 +36,13 @@ exports.start = (port, callback) => {
       urllib_proxy: {
         endpoint: 'http://localhost:' + port,
         client: 'http',
+        headerExtension: [
+          function (req, serviceCfg) {
+            return {
+              'test-header': 123
+            };
+          }
+        ],
         api: [
           '/urllib',
           {
