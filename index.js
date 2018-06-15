@@ -117,6 +117,7 @@ HcProxy.prototype.mount = function (router, app) {
         urllibOption
       };
     }).map(u => {
+      let log = u.log;
       let serviceName = u.serviceName;
       let path = u.path;
       let route = u.route;
@@ -136,6 +137,7 @@ HcProxy.prototype.mount = function (router, app) {
         }
         if (u.client === 'websocket') {
           debug('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
+          log.info('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
           return wsHandler.push({
             handler: clients[client](u, proxyHeaders),
             method,
@@ -144,6 +146,7 @@ HcProxy.prototype.mount = function (router, app) {
           });
         }
 
+        log.info('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
         debug('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
         if (file) {
           if (['PUT', 'POST'].indexOf(m) === -1) {
