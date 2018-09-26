@@ -67,6 +67,31 @@ HcProxy.prototype.mount = function (router, app) {
     let serviceName = k;
     let service = proxyRules[k];
     let api = service.api || ['/*'];
+    let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
+    
+    // 黑名单
+    let exclude = service.exclude || [];
+    if (exclude.length > 0) {
+      exclude.forEach((item) => {
+        if (typeof item === 'object') {
+          router[item.method.toLowerCase()](
+            routePrefix + '/' + serviceName + item.path,
+            function (req, res, next) {
+              res.status(404).end();
+            }
+          );
+        } else if (typeof item === 'string') {
+          ['GET', 'POST', 'DELETE', 'PUT'].forEach((m) => {
+            router[m.toLowerCase()](
+              routePrefix + '/' + serviceName + item,
+              function (req, res, next) {
+                res.status(404).end();
+              }
+            );
+          });
+        }
+      });
+    }
 
     api.map(u => {
       if (typeof u === 'string') u = {path: u};
@@ -80,7 +105,6 @@ HcProxy.prototype.mount = function (router, app) {
         throw utils.errorWrapper(`[hc-proxy]: endpoint should not be empty, service: ${k}`);
       }
 
-      let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
       if (!u.route) u.route = routePrefix + '/' + serviceName + u.path;
       let route = u.route;
 
@@ -96,7 +120,6 @@ HcProxy.prototype.mount = function (router, app) {
       let useQuerystringInDelete = !_.isNil(service.useQuerystringInDelete) ? !!service.useQuerystringInDelete :
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
       let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
-      let exclude = service.exclude || [];
 
       return {
         serviceName,
@@ -115,8 +138,7 @@ HcProxy.prototype.mount = function (router, app) {
         log,
         file,
         useQuerystringInDelete,
-        urllibOption,
-        exclude
+        urllibOption
       };
     }).map(u => {
       let log = u.log;
@@ -127,7 +149,6 @@ HcProxy.prototype.mount = function (router, app) {
       let client = u.client;
       let endpoint = u.endpoint;
       let file = u.file;
-      let exclude = u.exclude;
       if (!clients[client]) {
         return console.error('dtboost-proxy warning: there is no `client` called ' + client + '.');
       }
@@ -147,16 +168,6 @@ HcProxy.prototype.mount = function (router, app) {
             route,
             path
           });
-        }
-
-        // 黑名单
-        if(exclude.length > 0) {
-          router[m.toLowerCase()](
-            route,
-            function (req, res, next) {
-              res.status(404).end();
-            }
-          );
         }
 
         log.info('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
