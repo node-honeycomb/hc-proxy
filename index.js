@@ -168,9 +168,10 @@ HcProxy.prototype.mount = function (router, app) {
             router[m.toLowerCase()](
               route,
               function (req, res, next) {
-                if (req._readableState.ended) {
-                  return next();
-                }
+                // 需要搞清楚
+                // if (req._readableState.ended) {
+                //   return next();
+                // }
                 multer({
                   storage: multer.memoryStorage(),
                   limits: {
