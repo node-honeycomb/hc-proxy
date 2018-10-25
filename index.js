@@ -22,7 +22,7 @@ const clients  = {
   http: require('./lib/urllib'),
   websocket: require('./lib/websocket')
 };
-const methods = ['GET', 'POST', 'DELETE', 'PUT'];
+const methods = ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
 
 const HcProxy = function (options) {
   if (!options.service) {
