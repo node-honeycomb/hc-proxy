@@ -110,6 +110,17 @@ describe('开始测试', function () {
       });
     });
 
+    it.only('urllib PATCH 1' , function (done) {
+      request(proxyInstance)
+      .patch('/api/proxy/urllib_proxy/query_patch')
+      .send('abc=1')
+      .expect(200)
+      .end(function (err, res) {
+        assert(res.text === '{"url":"/query_patch","body":"abc=1"}');
+        done();
+      });
+    });
+
     it('delete method param should be in querystring.', function (done) {
       request(proxyInstance).delete('/api/proxy/urllib_proxy/query?a=2&b=2&c=3').expect(200).end(function (err, res) {
         assert(res.text === '/query?a=2&b=2&c=3');

@@ -50,6 +50,10 @@ exports.start = (port, callback) => {
             defaultQuery: 'a=1&b=2&c=3'
           },
           {
+            path: '/query_patch',
+            method: ['patch']
+          },
+          {
             path: '/query'
           },
           {
@@ -129,6 +133,17 @@ exports.start = (port, callback) => {
         });
       } else {
         app.put(route, processor);
+      }
+    },
+    patch: (route, processor, isWrapper) => {
+      if (isWrapper) {
+        app.patch(route, function (req, res) {
+          processor(req, (err, response) => {
+            response.pipe(res);
+          });
+        });
+      } else {
+        app.patch(route, processor);
       }
     },
     delete: (route, processor, isWrapper) => {

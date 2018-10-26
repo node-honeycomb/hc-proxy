@@ -15,7 +15,22 @@ exports.start = function startServer(callback) {
       });
     } else {
       console.log('req.headers[test-header]', req.headers['test-header']);
-      res.end(req.url);
+      const body = [];
+      req.on('error', err=>{
+        res.end(err);
+      }).on('data', chunk=>{
+        body.push(chunk);
+      }).on('end', ()=>{
+        if(/query_patch/.test(req.url)) {
+          res.end(JSON.stringify({
+            url: req.url,
+            body: Buffer.concat(body).toString()
+          }));
+        } else {
+          res.end(req.url);
+        }
+      })
+      
     }
   });
 

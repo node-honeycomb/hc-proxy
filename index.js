@@ -81,7 +81,7 @@ HcProxy.prototype.mount = function (router, app) {
             }
           );
         } else if (typeof item === 'string') {
-          ['GET', 'POST', 'DELETE', 'PUT'].forEach((m) => {
+          methods.forEach((m) => {
             router[m.toLowerCase()](
               routePrefix + '/' + serviceName + item,
               function (req, res, next) {
@@ -98,7 +98,7 @@ HcProxy.prototype.mount = function (router, app) {
       let path = u.path ? trim(u.path) : '/*';
       let client = u.client || service.client || 'appClient';
       if (typeof u.method === 'string') u.method = [u.method];
-      if (!u.method) u.method = client === 'websocket' ? ['GET'] : ['GET', 'POST', 'DELETE', 'PUT'];
+      if (!u.method) u.method = client === 'websocket' ? ['GET'] : methods;
       let method = u.method;
       let endpoint = u.endpoint || u.endPoint || u.host || service.endpoint || service.endPoint || '';
       if (!endpoint) {
@@ -173,8 +173,8 @@ HcProxy.prototype.mount = function (router, app) {
         log.info('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
         debug('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
         if (file) {
-          if (['PUT', 'POST'].indexOf(m) === -1) {
-            debug('[WARNING] file options should be used with PUT / POST method, current method is "' + m + '".');
+          if (['PUT', 'POST', 'PATCH'].indexOf(m) === -1) {
+            debug('[WARNING] file options should be used with PUT / POST / PATCH method, current method is "' + m + '".');
           } else {
             router[m.toLowerCase()](
               route,

@@ -41,7 +41,8 @@ exports.start = (port, callback) => {
       }
     },
     put: () => {},
-    delete: () => {}
+    delete: () => {},
+    patch: () => {}
   }, {
     server,
     options: {
