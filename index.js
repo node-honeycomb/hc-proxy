@@ -163,7 +163,7 @@ HcProxy.prototype.mount = function (router, app) {
           debug('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
           log.info('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
           return wsHandler.push({
-            handler: clients[client](u, proxyHeaders),
+            handler: clients[client](u, proxyHeaders, service.hook),
             method,
             route,
             path
@@ -192,7 +192,7 @@ HcProxy.prototype.mount = function (router, app) {
             );
           }
         }
-        router[m.toLowerCase()](route, clients[client](u, proxyHeaders)
+        router[m.toLowerCase()](route, clients[client](u, proxyHeaders, service.hook)
           , true   // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
         );
       });
