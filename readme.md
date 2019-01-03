@@ -179,6 +179,7 @@ options.service 详情
     timeout: ${timeout},
     useQuerystringInDelete: ${useQuerystringInDelete},    // 只有 appClient / urllib 模式有效
     urllibOption: ${urllibOption},                        // 只有 appClient / urllib 模式有效
+    defaultErrorCode: ${errorCode}                        // 覆盖5XX的errorCode
     api: [
       ${apiString},
       {
@@ -212,6 +213,7 @@ options.service 详情
   - maxFileSize: 上传文件的大小限制, 单位byte, default
 - useQuerystringInDelete: delete方法使用querystring代理, 默认为true
 - urllibOption: 用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置
+- defaultErrorCode: 覆盖转发时的5XX的errorCode
 
 client=[appClient/serviceClient]的专属配置
 

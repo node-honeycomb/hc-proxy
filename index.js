@@ -120,6 +120,7 @@ HcProxy.prototype.mount = function (router, app) {
       let useQuerystringInDelete = !_.isNil(service.useQuerystringInDelete) ? !!service.useQuerystringInDelete :
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
       let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
+      let defaultErrorCode = u.defaultErrorCode || service.defaultErrorCode;
 
       return {
         serviceName,
@@ -138,7 +139,8 @@ HcProxy.prototype.mount = function (router, app) {
         log,
         file,
         useQuerystringInDelete,
-        urllibOption
+        urllibOption,
+        defaultErrorCode
       };
     }).map(u => {
       let log = u.log;
