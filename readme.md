@@ -203,10 +203,10 @@ options.service 详情
 - endpoint: 每个远端服务的服务地址，如: 'http://localhost:7001' 或 'http://localhost:7001/service'
 - client: 目前只支持'appClient' / 'http' / 'websocket'，默认为'appClient'，其中 appClient 带了honeycomb体系中的签名逻辑
 - timeout: 某个服务或接口的超时时间，毫秒计算，默认60000
-- apiString: 使用默认配置对某个api进行代理，设置的是Api的path，如: '/api/user' 会对 '/api/user' 进行 'GET', 'POST', 'PUT', 'DELETE' 代理
+- apiString: 使用默认配置对某个api进行代理，设置的是Api的path，如: '/api/user' 会对 '/api/user' 进行 'GET', 'POST', 'PUT', 'PATCH', 'DELETE' 代理
 - path: api的路径，如: '/api/user'，支持 '/api/user' / '/api/user/:user' / '/api/user/'
 - route: api在路由中出现的路径(会忽略proxyPrefix)，如： '/remote_service/aaa' , 则调用 ${localService} + '/remote_service/aaa'，会被走path对应的远端服务
-- method: 指定这个api支持的方法 'GET' / ['GET', 'POST']，不填时，默认为 ['GET', 'POST', 'PUT', 'DELETE']
+- method: 指定这个api支持的方法 'GET' / ['GET', 'POST']，不填时，默认为 ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 - apiTimeout: 覆盖整个服务的timeout
 - defaultQuery: String / Object，用于配置默认的query参数(代理请求时自动加上)
 - beforeRequest: 暂不支持
