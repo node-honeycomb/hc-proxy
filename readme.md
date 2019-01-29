@@ -8,9 +8,9 @@
 
 ```
 http://localhost:7001/api/aaa         // 视频服务接口
-http://localhost:7001/api/c/*         // 视频服务接口
+http://localhost:7001/api/c/d        // 视频服务接口
 http://192.168.1.1:7001/api/bbb       // 音乐服务接口
-http://localhost:7001/ws/*            // 聊天服务接口 (使用websocket)
+http://localhost:7001/ws/a            // 聊天服务接口 (使用websocket)
 ```
 
 ### 以honeycomb项目为例进行配置
@@ -18,6 +18,7 @@ http://localhost:7001/ws/*            // 聊天服务接口 (使用websocket)
 1. 确定honeycomb项目的启动端口和prefix，比如： 项目的启动端口为8001，prefix为 'example'
 2. 整理远程调用的服务，给每个服务起个英文名称，比如： 上面的两个服务  视频服务(video)  音乐服务(music)  聊天服务(chat)
 3. 配置在router.js中，进行如下配置
+4. 请注意，为了确保安全，所有api只支持白名单
 
 ```js
 // router.js
@@ -30,7 +31,7 @@ const proxyInstance = new Proxy({
       client: 'http',
       api: [
         '/api/aaa',
-        '/api/c/*'
+        '/api/c/d'
       ]
     },
     music: {
@@ -83,7 +84,7 @@ const proxyInstance = new Proxy({
       endpoint: 'http://localhost:7001/',
       client: 'websocket',
       api: [
-        '/ws/*'
+        '/ws/a'
       ]
     }
   },
@@ -203,7 +204,7 @@ options.service 详情
 - client: 目前只支持'appClient' / 'http' / 'websocket'，默认为'appClient'，其中 appClient 带了honeycomb体系中的签名逻辑
 - timeout: 某个服务或接口的超时时间，毫秒计算，默认60000
 - apiString: 使用默认配置对某个api进行代理，设置的是Api的path，如: '/api/user' 会对 '/api/user' 进行 'GET', 'POST', 'PUT', 'DELETE' 代理
-- path: api的路径，如: '/api/user'，支持 '/api/user' / '/api/user/:user' / '/api/user/*'
+- path: api的路径，如: '/api/user'，支持 '/api/user' / '/api/user/:user' / '/api/user/'
 - route: api在路由中出现的路径(会忽略proxyPrefix)，如： '/remote_service/aaa' , 则调用 ${localService} + '/remote_service/aaa'，会被走path对应的远端服务
 - method: 指定这个api支持的方法 'GET' / ['GET', 'POST']，不填时，默认为 ['GET', 'POST', 'PUT', 'DELETE']
 - apiTimeout: 覆盖整个服务的timeout
@@ -257,7 +258,7 @@ const proxyInstance = new Proxy({
       client: 'appClient',                                                                // 默认appClient
       timeout: 10000,                                                                     // 默认60000
       api: [
-        '/api/*',                                                                         // 支持 * 代理某个path下的所有api
+        '/api/a',                                                                         // 支持 * 代理某个path下的所有api
         '/otm_v2/api/entities/list',                                                      // 代理这个 url 的 GET POST PUT DELETE 方法
         {path: '/otm_v2/api/entities/list', method: 'GET'},                                // 只代理 GET 方法
         {path: '/otm_v2/api/entities/list', client: 'appClient'},                          // 显式指定 method
