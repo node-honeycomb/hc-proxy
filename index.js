@@ -66,7 +66,7 @@ HcProxy.prototype.mount = function (router, app) {
   keys.map(k => {
     let serviceName = k;
     let service = proxyRules[k];
-    let api = service.api || ['/*'];
+    let api = service.api || ['/'];
     let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
     
     // 黑名单
@@ -95,7 +95,13 @@ HcProxy.prototype.mount = function (router, app) {
 
     api.map(u => {
       if (typeof u === 'string') u = {path: u};
-      let path = u.path ? trim(u.path) : '/*';
+      let path = u.path ? trim(u.path) : '/';
+
+      // 过滤掉所有*的写法
+      if (path.indexOf('*') !== -1) {
+        throw utils.errorWrapper(`[hc-proxy]: api should not be '*', it is very dangerous , path: ${path}`);
+      }
+
       let client = u.client || service.client || 'appClient';
       if (typeof u.method === 'string') u.method = [u.method];
       if (!u.method) u.method = client === 'websocket' ? ['GET'] : ['GET', 'POST', 'DELETE', 'PUT'];
@@ -121,7 +127,6 @@ HcProxy.prototype.mount = function (router, app) {
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
       let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
       let defaultErrorCode = u.defaultErrorCode || service.defaultErrorCode;
-
       return {
         serviceName,
         path,
