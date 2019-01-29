@@ -127,6 +127,7 @@ HcProxy.prototype.mount = function (router, app) {
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
       let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
       let defaultErrorCode = u.defaultErrorCode || service.defaultErrorCode;
+      
       return {
         serviceName,
         path,
