@@ -214,7 +214,7 @@ HcProxy.prototype.mount = function (router, app) {
         routePrefix + '/' + serviceName + '/*',
         function (req, res, next) {
           res.send(404, {
-            code: 404,
+            code: 'NOT FOUND',
             message: '无法访问该API，请添加进白名单再重尝试访问。'
           }).end();
         }
