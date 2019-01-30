@@ -93,12 +93,13 @@ HcProxy.prototype.mount = function (router, app) {
       });
     }
 
+    // 白名单
     api.map(u => {
       if (typeof u === 'string') u = {path: u};
       let path = u.path ? trim(u.path) : '/';
 
       // 过滤掉所有*的写法
-      if (path.indexOf('*') !== -1) {
+      if (!service._isIgnoreWhiteList && path.indexOf('*') !== -1) {
         throw utils.errorWrapper(`[hc-proxy]: api should not be '*', it is very dangerous , path: ${path}`);
       }
 
@@ -205,6 +206,19 @@ HcProxy.prototype.mount = function (router, app) {
           , true   // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
         );
       });
+    });
+
+    // 最后挂上该service的路由拦截
+    methods.forEach((method) => {
+      router[method.toLowerCase()](
+        routePrefix + '/' + serviceName + '/*',
+        function (req, res, next) {
+          res.send(404, {
+            code: 404,
+            message: '无法访问该API，请添加进白名单再重尝试访问。'
+          }).end();
+        }
+      );
     });
   });
 
