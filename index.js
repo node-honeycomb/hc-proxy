@@ -31,6 +31,18 @@ const HcProxy = function (options) {
   this.proxyRules = options.service || {};
   this.proxyHeaders = options.headers || [];
   this.proxyPrefix = '/api/proxy';
+
+  // http header 默认标准字段透传，例：国际化等
+  const standardFields = ['accept-language'];
+  standardFields.forEach((field) => {
+    const _f = field.toLowerCase();
+    const hasField = this.proxyHeaders.some((item) => {
+      return item.toLowerCase() === _f
+    });
+    if (!hasField) {
+      this.proxyHeaders.push(_f);
+    }
+  });
 };
 
 HcProxy.prototype.setProxyPrefix = function (proxyPrefix) {
