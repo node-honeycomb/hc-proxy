@@ -4,6 +4,7 @@ const _ = require('lodash');
 const http = require('http');
 const url = require('url');
 const multer = require('multer');
+const path = require('path');
 const pathToRegexp = require('path-to-regexp');
 const utils = require('./lib/utils');
 const debug = require('debug')('hc-proxy');
@@ -87,15 +88,15 @@ HcProxy.prototype.mount = function (router, app) {
       exclude.forEach((item) => {
         if (typeof item === 'object') {
           router[item.method.toLowerCase()](
-            routePrefix + '/' + serviceName + item.path,
+            path.join(routePrefix,serviceName,item.path),
             function (req, res, next) {
               res.status(404).end();
             }
           );
         } else if (typeof item === 'string') {
           methods.forEach((m) => {
-            router[m.toLowerCase()](
-              routePrefix + '/' + serviceName + item,
+            router.all(
+              path.join(routePrefix, serviceName, item),
               function (req, res, next) {
                 res.status(404).end();
               }
@@ -109,15 +110,27 @@ HcProxy.prototype.mount = function (router, app) {
     api.map(u => {
       if (typeof u === 'string') u = {path: u};
       let path = u.path ? trim(u.path) : '/';
-
-      // 过滤掉所有*的写法
-      if (!service._isIgnoreWhiteList && path.indexOf('*') !== -1) {
-        throw utils.errorWrapper(`[hc-proxy]: api should not be '*', it is very dangerous , path: ${path}`);
+      
+      if (service.enablePathWithMatch || service._isIgnoreWhiteList) {
+        // 允许 * , 啥也不做
+      } else {
+        // 过滤掉所有*的写法
+        if (path.indexOf('*') !== -1) {
+          throw utils.errorWrapper(`[hc-proxy]: api should not be '*', it is very dangerous , path: ${path}`);
+        }
       }
 
       let client = u.client || service.client || 'appClient';
-      if (typeof u.method === 'string') u.method = [u.method];
-      if (!u.method) u.method = client === 'websocket' ? ['GET'] : methods;
+      if (typeof u.method === 'string') {
+        u.method = [u.method];
+      }
+      if (!u.method) {
+        if (u.file) {
+          u.method = ['POST']
+        } else {
+          u.method = client === 'websocket' ? ['GET'] : ['ALL'];
+        }
+      }
       let method = u.method;
       let endpoint = u.endpoint || u.endPoint || u.host || service.endpoint || service.endPoint || '';
       if (!endpoint) {
@@ -140,6 +153,9 @@ HcProxy.prototype.mount = function (router, app) {
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
       let urllibOption = Object.assign({}, service.urllibOption, u.urllibOption);
       let defaultErrorCode = u.defaultErrorCode || service.defaultErrorCode;
+
+      let beforeRequest = u.beforeRequest;
+      let beforeResponse = u.beforeResponse;
       
       return {
         serviceName,
@@ -159,7 +175,9 @@ HcProxy.prototype.mount = function (router, app) {
         file,
         useQuerystringInDelete,
         urllibOption,
-        defaultErrorCode
+        defaultErrorCode,
+        beforeRequest,
+        beforeResponse
       };
     }).map(u => {
       let log = u.log;
@@ -171,18 +189,12 @@ HcProxy.prototype.mount = function (router, app) {
       let endpoint = u.endpoint;
       let file = u.file;
       if (!clients[client]) {
-        return console.error('dtboost-proxy warning: there is no `client` called ' + client + '.');
+        throw new Error(`[hc-proxy] there is no 'client' called:${client} at hc-proxy config ${serviceName}`);
       }
 
       method.map(m => {
-        m = '' + m;
         m = m.toUpperCase();
-        if (methods.indexOf(m) === -1) {
-          return console.error('dtboost-proxy warning: there is no `method` called ' + client + '.');
-        }
         if (u.client === 'websocket') {
-          debug('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
-          log.info('[WEBSOCKET]', route, '->' ,(u.endpoint || '') + (u.path || ''));
           return wsHandler.push({
             handler: clients[client](u, proxyHeaders),
             method,
@@ -191,47 +203,35 @@ HcProxy.prototype.mount = function (router, app) {
           });
         }
 
-        log.info('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
-        debug('[' + m + ']', route, '->' ,(u.endpoint || '') + (u.path || ''));
         if (file) {
           if (['PUT', 'POST', 'PATCH'].indexOf(m) === -1) {
-            debug('[WARNING] file options should be used with PUT / POST / PATCH method, current method is "' + m + '".');
+            throw new Error(`[hc-proxy] file options should be used with PUT / POST / PATCH method, current method is ${m}, at ${serviceName}`);
           } else {
-            router[m.toLowerCase()](
-              route,
-              function (req, res, next) {
-                // 需要搞清楚
-                // if (req._readableState.ended) {
-                //   return next();
-                // }
-                multer({
-                  storage: multer.memoryStorage(),
-                  limits: {
-                    fileSize: _.get(file, 'maxFileSize')
-                  }
-                }).any().apply(this, arguments);
+            let fileMid = multer({
+              storage: multer.memoryStorage(),
+              limits: {
+                fileSize: _.get(file, 'maxFileSize')
               }
-            );
+            }).any();
+            // 挂载接收文件的middleware
+            router[m.toLowerCase()](route, fileMid);
           }
         }
-        router[m.toLowerCase()](route, clients[client](u, proxyHeaders)
-          , true   // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
-        );
+        // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
+        router[m.toLowerCase()](route, clients[client](u, proxyHeaders), true);
       });
     });
 
-    // 最后挂上该service的路由拦截
-    methods.forEach((method) => {
-      router[method.toLowerCase()](
-        routePrefix + '/' + serviceName + '/*',
-        function (req, res, next) {
-          res.send(404, {
-            code: 'NOT FOUND',
-            message: '无法访问该API，请添加进白名单再重尝试访问。'
-          }).end();
-        }
-      );
-    });
+
+    router.all(
+      routePrefix + '/' + serviceName + '/*',
+      function (req, res, next) {
+        res.send(404, {
+          code: 'NOT FOUND',
+          message: '无法访问该API，请添加进白名单再重尝试访问。'
+        }).end();
+      }
+    );
   });
 
   if (wsHandler.length > 0) {

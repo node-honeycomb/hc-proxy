@@ -5,22 +5,20 @@ const express = require('express');
 const app = express();
 const config = require('../config');
 // const expressWs = require('express-ws')(app);
-
 exports.start = (port, callback) => {
   const Proxy = require('../../');
   const proxyInstance = new Proxy({
     service: {
       app_client: {
-        endpoint: config.azkEndpoint,
+        endpoint: config.endpoint,
         accessKeyId: config.accessKeyId,
         accessKeySecret: config.accessKeySecret,
         workApp: config.workApp,
+        enablePathWithMatch: true,
         headerExtension: [
           function (req, serviceCfg) {
             return {
-              'X-ScopeId': config.scopeId,
-              'X-Operator': config.userId,
-              'X-Work-App': serviceCfg.workApp
+              'X-Custom-Header': 'custom-header'
             };
           }
         ],
@@ -36,6 +34,7 @@ exports.start = (port, callback) => {
       urllib_proxy: {
         endpoint: 'http://localhost:' + port,
         client: 'http',
+        enablePathWithMatch: true,
         headerExtension: [
           function (req, serviceCfg) {
             return {
@@ -82,6 +81,7 @@ exports.start = (port, callback) => {
       websocket: {
         endpoint: 'http://localhost:' + port,
         client: 'websocket',
+        enablePathWithMatch: true,
         api: [
           '/ws',
           {
@@ -97,52 +97,65 @@ exports.start = (port, callback) => {
 
   const server = app.listen(null, callback);
 
-  proxyInstance.mount({
+  const router = express.Router();
+  const mockRouter = {
     get: function (route, processor, isWrapper) {
       if (isWrapper) {
-        app.get(route, function (req, res) {
+        router.get(route, function (req, res) {
           processor(req, (err, response) => {
             response.pipe(res);
           });
         });
       } else {
-        app.get(route, processor);
+        router.get(route, processor);
       }
     },
     post: (route, processor, isWrapper) => {
       if (isWrapper) {
-        app.post(route, function (req, res) {
+        router.post(route, function (req, res) {
           processor(req, (err, response) => {
             response.pipe(res);
           });
         });
       } else {
-        app.post(route, processor);
+        router.post(route, processor);
       }
     },
     put: (route, processor, isWrapper) => {
       if (isWrapper) {
-        app.put(route, function (req, res) {
+        router.put(route, function (req, res) {
           processor(req, (err, response) => {
             response.pipe(res);
           });
         });
       } else {
-        app.put(route, processor);
+        router.put(route, processor);
       }
     },
     delete: (route, processor, isWrapper) => {
       if (isWrapper) {
-        app.delete(route, function (req, res) {
+        router.delete(route, function (req, res) {
           processor(req, (err, response) => {
             response.pipe(res);
           });
         });
       } else {
-        app.delete(route, processor);
+        router.delete(route, processor);
+      }
+    },
+    all: (route, processor, isWrapper) => {
+      if (isWrapper) {
+        router.all(route, function (req, res) {
+          processor(req, (err, response) => {
+            response.pipe(res);
+          });
+        });
+      } else {
+        router.all(route, processor);
       }
     }
-  }, {
+  };
+  proxyInstance.mount(mockRouter, {
     server,
     options: {
       prefix: '',
@@ -151,6 +164,8 @@ exports.start = (port, callback) => {
       return console;
     }
   });
+
+  app.use('/', router);
 
   return server;
 };

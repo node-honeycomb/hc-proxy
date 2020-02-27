@@ -41,10 +41,12 @@ describe('开始测试', function () {
     });
 
     it('urllib' , function (done) {
-      request(proxyInstance).get('/api/proxy/urllib_proxy/urllib').expect(200).end(function (err, res) {
-        assert(res.text === '/urllib');
-        done();
-      });
+      request(proxyInstance).get('/api/proxy/urllib_proxy/urllib')
+        .expect(200)
+        .end(function (err, res) {
+          assert(res.text === '/urllib');
+          done();
+        });
     });
 
     it('urllib defaultQuery GET 1' , function (done) {
@@ -274,7 +276,7 @@ describe('开始测试', function () {
       req.end();
     });
 
-    it('azk service should be ok', function (done) {
+    it.skip('azk service should be ok', function (done) {
       request(proxyInstance).get('/api/proxy/app_client/alg/categories').query({
         scopeId: 'dtboost',
         isPrivate: true,
@@ -288,7 +290,7 @@ describe('开始测试', function () {
       });
     });
 
-    it('azk upload file api should be ok', function (done) {
+    it.skip('azk upload file api should be ok', function (done) {
       request(proxyInstance)
         .post('/api/proxy/app_client/common/resource/add')
         .field('platform', 'ODPS')

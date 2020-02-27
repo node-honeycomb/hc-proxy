@@ -41,7 +41,18 @@ exports.start = (port, callback) => {
       }
     },
     put: () => {},
-    delete: () => {}
+    delete: () => {},
+    all: (route, processor, isWrapper) => {
+      if (isWrapper) {
+        app.use(route, function (req, res) {
+          processor(req, (err, response) => {
+            response.pipe(res);
+          });
+        });
+      } else {
+        app.use(route, processor);
+      }
+    }
   }, {
     server,
     options: {

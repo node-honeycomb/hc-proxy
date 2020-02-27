@@ -1,19 +1,8 @@
-# service proxy
+# hc-proxy
 
-> api代理模块，解决跨域、权限问题
+api代理模块，node server端代理请求后端service用。
 
-## 场景案例
-
-远程需要被代理转发的服务:
-
-```
-http://localhost:7001/api/aaa         // 视频服务接口
-http://localhost:7001/api/c/d        // 视频服务接口
-http://192.168.1.1:7001/api/bbb       // 音乐服务接口
-http://localhost:7001/ws/a            // 聊天服务接口 (使用websocket)
-```
-
-### 以honeycomb项目为例进行配置
+## 以honeycomb项目为例进行配置
 
 1. 确定honeycomb项目的启动端口和prefix，比如： 项目的启动端口为8001，prefix为 'example'
 2. 整理远程调用的服务，给每个服务起个英文名称，比如： 上面的两个服务  视频服务(video)  音乐服务(music)  聊天服务(chat)
@@ -48,6 +37,7 @@ const proxyInstance = new Proxy({
   ]
 });
 
+// 代理的接口前缀  /api/proxy, 可以自定义
 proxyInstance.setProxyPrefix('/api/proxy');
 
 module.exports = function (router) {
@@ -57,8 +47,12 @@ module.exports = function (router) {
 
 ### 配置完成后访问地址
 
-访问地址为 ${honeycomb服务地址:honeycomb服务端口/honeycomb的prefix} + ${proxyPrefix} + ${被代理服务名} + ${具体api}
+访问地址为:
+```
+${服务地址:服务端口/prefix} + ${proxyPrefix} + ${被代理服务名} + ${具体api}
+```
 
+上面的配置案例里：
 ```shell
 1. 视频服务:   curl http://localhost:8001/example/api/proxy/video/api/aaa => http://localhost:7001/api/aaa
 2. 视频服务:   curl http://localhost:8001/example/api/proxy/video/api/c/somewhat?xxx=123 => http://localhost:7001/api/c/somewhat?xxx=123
@@ -130,7 +124,9 @@ const proxyInstance = new Proxy({
           path: '/api/upload_limited',
           file: {
             maxFileSize: 100        // 100B
-          }
+          },
+          beforeRequest: (req, options, config) => {},
+          beforeResponse: (req, res, data) => {}
         }
       ]
     }
@@ -171,27 +167,63 @@ options.service 详情
 ```
 {
   ${serviceCode}: {
+    /* 每个远端服务的服务地址，如: 'http://localhost:7001' */
     endpoint: ${endpoint},
     accessKeyId: ${accessKeyId},
     accessKeySecret: ${accessKeySecret},
-    headerExtension: ${headerExtension}，
-    headers: ${headers},
+    /* 同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client */
+    headerExtension: ${headerExtension},
+    /* 选填，透传的header列表，同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client */
+    headers: {Array},
+    /* 可选，发起请求的agent，目前只支持'appClient' / 'http' / 'websocket'，默认为'appClient'，其中 appClient 带了honeycomb体系中的签名逻辑 */
     client: ${client},
+    /* 接口超时时间，单位毫秒 */
     timeout: ${timeout},
-    useQuerystringInDelete: ${useQuerystringInDelete},    // 只有 appClient / urllib 模式有效
-    urllibOption: ${urllibOption},                        // 只有 appClient / urllib 模式有效
-    defaultErrorCode: ${errorCode}                        // 覆盖5XX的errorCode
+    /* 可选，delete方法使用querystring代理, 默认为true */
+    useQuerystringInDelete: ${useQuerystringInDelete}, // 只有 appClient / urllib 模式有效
+    /* 可选，用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置 */
+    urllibOption: {Object},                     // 只有 appClient / urllib 模式有效
+    /* 覆盖转发时的5XX的errorCode */
+    defaultErrorCode: {Number}
+    /* 排除列表, 不代理的接口 */
+    exclude: {Array}
+    /* 路由前缀 */
+    routePrefix: {String} 
+    /* 是否开启路径支持正则匹配, 默认关闭，开启请确保安全 */
+    enablePathWithMatch: {Boolean} false
     api: [
-      ${apiString},
+      /* 接口配置可以是简单的一个string */
+      '${ApiPathString}',
       {
-        path: ${path},
-        route: ${route},
-        method: ${method},
-        timeout: ${apiTimeout},
-        defaultQuery: ${defaultQuery},
-        beforeRequest: ${beforeRequest}, // TODO
-        useQuerystringInDelete: ${useQuerystringInDelete},
-        urllibOption: ${urllibOption}
+        /* api访问的path */
+        path: {String}
+        /* 如若定义，会覆盖proxyPrefix, 给特殊场景定义接口路径用 */
+        route: {String}
+        /* 接口方法 */
+        method: 'GET|POST|PUT|DELETE|PATCH'
+        /* 接口超时时间, 单位毫秒，覆盖上面配置的服务的通用超时，通常用来设置特殊接口的超时时长 */
+        timeout: {Number},
+        /* 请求的默认querystring信息， 用于配置默认的query参数(代理请求时自动加上) */
+        defaultQuery: {Object|String},
+        /**
+         * 发起请求前的hook, beforeRequest(req, apiReq, config) 
+         *    @param req {Request} 客户端请求对象request,
+         *    @param options {Object} urlib的配置信息,
+         *    @param config {Object} api的配置信息
+         */
+        beforeRequest: {Function(req, options, config)},
+        /**
+         * 请求从服务接口返回之后的hook，afterResponse(req, res, apiRes) 
+         *  @param req {Request} 客户端请求的request对象,
+         *  @param res {Response} proxy端请求的response对象,
+         *  @param data {Response} 返回数据
+         *  @return data
+         */
+        beforeResponse: {Function(req, res, data)}, 
+        /* delete方法使用querystring代理, 默认为true */
+        useQuerystringInDelete: {Boolean},
+        /** 用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置 */
+        urllibOption: {Object}
       }
     ]
   }
@@ -199,24 +231,6 @@ options.service 详情
 ```
 
 通用配置:
-
-- endpoint: 每个远端服务的服务地址，如: 'http://localhost:7001' 或 'http://localhost:7001/service'
-- client: 目前只支持'appClient' / 'http' / 'websocket'，默认为'appClient'，其中 appClient 带了honeycomb体系中的签名逻辑
-- timeout: 某个服务或接口的超时时间，毫秒计算，默认60000
-- apiString: 使用默认配置对某个api进行代理，设置的是Api的path，如: '/api/user' 会对 '/api/user' 进行 'GET', 'POST', 'PUT', 'PATCH', 'DELETE' 代理
-- path: api的路径，如: '/api/user'，支持 '/api/user' / '/api/user/:user' / '/api/user/'
-- route: api在路由中出现的路径(会忽略proxyPrefix)，如： '/remote_service/aaa' , 则调用 ${localService} + '/remote_service/aaa'，会被走path对应的远端服务
-- method: 指定这个api支持的方法 'GET' / ['GET', 'POST']，不填时，默认为 ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
-- apiTimeout: 覆盖整个服务的timeout
-- defaultQuery: String / Object，用于配置默认的query参数(代理请求时自动加上)
-- beforeRequest: 暂不支持
-- file: 配置上传文件，出现上传文件配置时，该接口支持上传文件，子配置使用默认值可以配置为 {... file: true}
-  - maxFileSize: 上传文件的大小限制, 单位byte, default
-- useQuerystringInDelete: delete方法使用querystring代理, 默认为true
-- urllibOption: 用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置
-- defaultErrorCode: 覆盖转发时的5XX的errorCode
-
-client=[appClient/serviceClient]的专属配置
 
 - headers: 选填，同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client
 - accessKeyId: 选填，同 hc-service-client 配置，默认 'hc-proxy'，详见 https://www.npmjs.com/package/hc-service-client
