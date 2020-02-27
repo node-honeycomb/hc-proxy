@@ -156,6 +156,7 @@ HcProxy.prototype.mount = function (router, app) {
 
       let beforeRequest = u.beforeRequest;
       let beforeResponse = u.beforeResponse;
+      let statusCode = u.return;
       
       return {
         serviceName,
@@ -176,6 +177,7 @@ HcProxy.prototype.mount = function (router, app) {
         useQuerystringInDelete,
         urllibOption,
         defaultErrorCode,
+        statusCode,
         beforeRequest,
         beforeResponse
       };
@@ -188,6 +190,7 @@ HcProxy.prototype.mount = function (router, app) {
       let client = u.client;
       let endpoint = u.endpoint;
       let file = u.file;
+      let statusCode = u.statusCode;
       if (!clients[client]) {
         throw new Error(`[hc-proxy] there is no 'client' called:${client} at hc-proxy config ${serviceName}`);
       }
@@ -217,8 +220,15 @@ HcProxy.prototype.mount = function (router, app) {
             router[m.toLowerCase()](route, fileMid);
           }
         }
-        // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
-        router[m.toLowerCase()](route, clients[client](u, proxyHeaders), true);
+        if (statusCode) {
+          router[m.toLowerCase()](router, (req, res, next) => {
+            res.statusCode = statusCode; 
+            res.end();
+          });
+        } else {
+          // 支持 framework5.0, 需要使用 isWrapper 来辨认是否是 callback 回调
+          router[m.toLowerCase()](route, clients[client](u, proxyHeaders), true);
+        }
       });
     });
 

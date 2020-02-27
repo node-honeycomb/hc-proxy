@@ -117,6 +117,10 @@ const proxyInstance = new Proxy({
       client: 'http',
       api: [
         {
+          path: '/api/404',
+          return: 404
+        },
+        {
           path: '/api/upload',
           file: true
         },
