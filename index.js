@@ -147,7 +147,7 @@ HcProxy.prototype.mount = function (router, app) {
       let accessKeySecret = u.accessKeySecret || service.accessKeySecret || _.get(app, 'config.systemToken');
       let headerExtension = u.headerExtension || service.headerExtension || [];
       let headers = u.headers || service.headers;
-      let log = app && app.getLog() || console;
+      let log = (app && app.log) || console;
       let file = u.file || false;
       let useQuerystringInDelete = !_.isNil(service.useQuerystringInDelete) ? !!service.useQuerystringInDelete :
         !_.isNil(u.useQuerystringInDelete) ? !!u.useQuerystringInDelete : true;
