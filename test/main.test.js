@@ -7,7 +7,6 @@ const proxyServer = require('./server/proxy_server');
 const http = require('http');
 const assert = require('assert');
 const request = require('supertest');
-const proxyquire = require('proxyquire');
 const debug = require('debug')('hc-proxy-test');
 
 describe('开始测试', function () {
