@@ -2,5 +2,5 @@
 node_modules/
 test.js
 
-test/config.js
 package-lock.json
+.nyc_output

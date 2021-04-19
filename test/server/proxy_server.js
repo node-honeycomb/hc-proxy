@@ -1,6 +1,6 @@
 'use strict';
-
 const http = require('http');
+const stream = require('stream');
 const express = require('express');
 const app = express();
 const config = require('../config');
@@ -27,8 +27,17 @@ exports.start = (port, callback) => {
           {
             path: '/common/resource/add',
             method: 'POST',
-            file: true
-          }
+            file: true,
+          },
+          {
+            path: '/common/resource/add/without',
+            method: 'POST',
+            file: true,
+            beforeResponse: (req) => {
+              const response = new stream.PassThrough();
+              return response.end(Buffer.from(JSON.stringify(req.headers)));
+            }
+          }          
         ]
       },
       urllib_proxy: {
@@ -114,7 +123,9 @@ exports.start = (port, callback) => {
       if (isWrapper) {
         router.post(route, function (req, res) {
           processor(req, (err, response) => {
-            response.pipe(res);
+            if(response.pipe) {
+              return response.pipe(res);
+            }
           });
         });
       } else {
@@ -155,6 +166,7 @@ exports.start = (port, callback) => {
       }
     }
   };
+
   proxyInstance.mount(mockRouter, {
     server,
     options: {

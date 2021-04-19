@@ -1,11 +1,13 @@
 'use strict';
 
+const errorProxy = require('./server/error_proxy');
 const httpServer = require('./server/http_server');
 const proxyServer = require('./server/proxy_server');
-const errorProxy = require('./server/error_proxy');
-const request = require('supertest');
+
 const http = require('http');
 const assert = require('assert');
+const request = require('supertest');
+const proxyquire = require('proxyquire');
 const debug = require('debug')('hc-proxy-test');
 
 describe('开始测试', function () {
@@ -302,6 +304,21 @@ describe('开始测试', function () {
         .expect(200).end(function (err, res) {
           const d = JSON.parse(res.text);
           assert(d.code === 'SUCCESS');
+          done();
+        });
+    });
+
+    it('upload with or without file still with header form', (done) => {
+      request(proxyInstance)
+        .post('/api/proxy/app_client/common/resource/add/without')
+        .field('platform', 'ODPS')
+        .field('sourceType', 'JAR')
+        .field('name', 'hello.jar')
+        .field('description', 'hc-proxy test')
+        .field('scopeId', 'dtboost')
+        .expect(200).end(function (err, res) {
+          const d = JSON.parse(res.text);
+          assert(d['content-type'].includes('form-data'));
           done();
         });
     });
