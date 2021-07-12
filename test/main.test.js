@@ -84,7 +84,7 @@ describe('开始测试', function () {
         .field('tenantCode', 'dtboost')
         .attach('file', './test/main.test.js')
         .expect(200).end(function (err, res) {
-          assert(res.text === 'main.test.js');
+          assert(res.body[0].originalname === 'main.test.js');
           done();
         });
     });
@@ -301,7 +301,7 @@ describe('开始测试', function () {
         .field('scopeId', 'dtboost')
         .attach('file', './test/main.test.js')
         .expect(200).end(function (err, res) {
-          const d = JSON.parse(res.text);
+          const d = res.body;
           assert(d.code === 'SUCCESS');
           done();
         });

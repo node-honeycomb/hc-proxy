@@ -11,7 +11,11 @@ exports.start = function startServer(callback) {
   const server = http.createServer((req, res) => {
     if (req.url.startsWith('/upload')) {
       upload(req, res, function (err) {
-        res.end(req.files.map(f => (f.originalname)).join(','));
+        req.files.forEach((file) => {
+          delete file.buffer;
+        });
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(req.files, null, 2));
       });
     } else {
       console.log('req.headers[test-header]', req.headers['test-header']);

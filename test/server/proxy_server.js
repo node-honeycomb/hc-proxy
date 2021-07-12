@@ -10,7 +10,7 @@ exports.start = (port, callback) => {
   const proxyInstance = new Proxy({
     service: {
       app_client: {
-        endpoint: config.endpoint,
+        endpoint: 'http://localhost:' + port,
         accessKeyId: config.accessKeyId,
         accessKeySecret: config.accessKeySecret,
         workApp: config.workApp,
@@ -28,6 +28,10 @@ exports.start = (port, callback) => {
             path: '/common/resource/add',
             method: 'POST',
             file: true,
+          },
+          {
+            path: '/upload/pipe',
+            pipe: true
           },
           {
             path: '/common/resource/add/without',
@@ -76,6 +80,10 @@ exports.start = (port, callback) => {
             path: '/query_star/*'
           },
           {
+            path: '/upload/pipe',
+            pipe: true
+          },
+          {
             path: '/upload',
             file: true
           },
@@ -112,6 +120,7 @@ exports.start = (port, callback) => {
       if (isWrapper) {
         router.get(route, function (req, res) {
           processor(req, (err, response) => {
+            res.writeHead(response.statusCode, response.headers);
             response.pipe(res);
           });
         });
@@ -124,6 +133,7 @@ exports.start = (port, callback) => {
         router.post(route, function (req, res) {
           processor(req, (err, response) => {
             if(response.pipe) {
+              res.writeHead(response.statusCode || 200, response.headers);
               return response.pipe(res);
             }
           });
@@ -136,6 +146,7 @@ exports.start = (port, callback) => {
       if (isWrapper) {
         router.put(route, function (req, res) {
           processor(req, (err, response) => {
+            res.writeHead(response.statusCode || 200, response.headers);
             response.pipe(res);
           });
         });
@@ -147,6 +158,7 @@ exports.start = (port, callback) => {
       if (isWrapper) {
         router.delete(route, function (req, res) {
           processor(req, (err, response) => {
+            res.writeHead(response.statusCode || 200, response.headers);
             response.pipe(res);
           });
         });
@@ -158,6 +170,7 @@ exports.start = (port, callback) => {
       if (isWrapper) {
         router.all(route, function (req, res) {
           processor(req, (err, response) => {
+            res.writeHead(response.statusCode || 200, response.headers);
             response.pipe(res);
           });
         });

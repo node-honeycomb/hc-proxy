@@ -113,6 +113,7 @@ HcProxy.prototype.mount = function (router, app) {
     let apiWhiteList = api.map(u => {
       if (typeof u === 'string') u = {path: u};
       let path = u.path ? utils.trim(u.path) : '/';
+      let pipe = u.pipe || false;
       
       if (service.enablePathWithMatch || service._isIgnoreWhiteList) {
         // 允许 * , 啥也不做
@@ -163,6 +164,7 @@ HcProxy.prototype.mount = function (router, app) {
       
       return {
         serviceName,
+        pipe,
         path,
         route,
         method,
