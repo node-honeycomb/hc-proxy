@@ -1,6 +1,6 @@
 {
   "name": "hc-proxy",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "honeycomb api proxy express middleware.",
   "main": "index.js",
   "scripts": {
