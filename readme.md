@@ -207,6 +207,8 @@ options.service 详情
         method: 'GET|POST|PUT|DELETE|PATCH'
         /* 接口超时时间, 单位毫秒，覆盖上面配置的服务的通用超时，通常用来设置特殊接口的超时时长 */
         timeout: {Number},
+        /* 是否透传, 开启透传之后，body不落地，直接pipe到远端； 开启pipe之后，body内容不参与签名(签名里的body='') */
+        pipe: true,
         /* 请求的默认querystring信息， 用于配置默认的query参数(代理请求时自动加上) */
         defaultQuery: {Object|String},
         /**

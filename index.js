@@ -8,15 +8,6 @@ const path = require('path');
 const pathToRegexp = require('path-to-regexp');
 const utils = require('./lib/utils');
 const debug = require('debug')('hc-proxy');
-
-function trim (url) {
-  if (_.endsWith(url, '/')) {
-    return url.slice(0, -1);
-  } else {
-    return url;
-  }
-}
-
 const clients  = {
   appClient: require('./lib/service_client'),
   serviceClient: require('./lib/service_client'),
@@ -25,23 +16,32 @@ const clients  = {
 };
 const methods = ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
 
-const HcProxy = function (options) {
+/**
+ * [HcProxy description]
+ * @param {Object} options
+ *          service {Object}
+ *
+ *          headers {Array} proxy headers to paas through
+ *          proxyPrefix {String} url prefix, default /api/proxy
+ * 
+ */
+function HcProxy(options) {
   if (!options.service) {
-    throw utils.errorWrapper('[hc-proxy]: options.service is needed in options.');
+    throw utils.errorWrapper('[hc-proxy]: options.service is missing!');
   }
-  this.proxyRules = options.service || {};
+  this.proxyService = options.service || {};
   this.proxyHeaders = options.headers || [];
-  this.proxyPrefix = '/api/proxy';
+  this.proxyPrefix = options.proxyPrefix || '/api/proxy';
 
   // http header 默认标准字段透传，例：国际化等
-  const standardFields = ['accept-language'];
-  standardFields.forEach((field) => {
-    const _f = field.toLowerCase();
-    const hasField = this.proxyHeaders.some((item) => {
-      return item.toLowerCase() === _f
-    });
-    if (!hasField) {
-      this.proxyHeaders.push(_f);
+  let defaultHeaders = ['accept-language'];
+  let proxyHeaderMap = {};
+  this.proxyHeaders.forEach((h) => {
+    proxyHeaderMap[h.toLowerCase()] = true;
+  });
+  defaultHeaders.forEach((h) => {
+    if (!proxyHeaderMap[h.toLowerCase()]) {
+      this.proxyHeaders.push(h);
     }
   });
 };
@@ -55,30 +55,33 @@ HcProxy.prototype.setProxyPrefix = function (proxyPrefix) {
 
 HcProxy.prototype.mount = function (router, app) {
   if (!router) {
-    throw utils.errorWrapper('[hc-proxy]: mount method should have `router`, but got one: ' + router);
+    throw utils.errorWrapper('[hc-proxy]: mount(router, app) missing param `router`');
   }
   if (!app) {
-    throw utils.errorWrapper('[hc-proxy]: mount method should have two arguments `router`、`app`, but got one: ' + arguments);
+    throw utils.errorWrapper('[hc-proxy]: mount(router, app) missing param `app`');
   }
-  const proxyRules = this.proxyRules;
-  const proxyHeaders = this.proxyHeaders ? this.proxyHeaders : [];
+  let proxyService = this.proxyService;
+  let proxyHeaders = this.proxyHeaders ? this.proxyHeaders : [];
 
-  if (proxyRules.length) {
-    proxyRules = {
+  /**
+   * 兼容老接口情况，传入的 service 是个api list
+   */
+  if (proxyService.length) {
+    proxyService = {
       default: {
         endpoint: '',
         client: 'appClient',
-        api: proxyRules
+        api: proxyService
       }
     };
   }
 
-  let keys = Object.keys(proxyRules);
+  let serviceNameList = Object.keys(proxyService);
 
   let wsHandler = [];
-  keys.map(k => {
+  serviceNameList.forEach(k => {
     let serviceName = k;
-    let service = proxyRules[k];
+    let service = proxyService[k];
     let api = service.api || ['/'];
     let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
     
@@ -107,9 +110,9 @@ HcProxy.prototype.mount = function (router, app) {
     }
 
     // 白名单
-    api.map(u => {
+    let apiWhiteList = api.map(u => {
       if (typeof u === 'string') u = {path: u};
-      let path = u.path ? trim(u.path) : '/';
+      let path = u.path ? utils.trim(u.path) : '/';
       
       if (service.enablePathWithMatch || service._isIgnoreWhiteList) {
         // 允许 * , 啥也不做
@@ -181,7 +184,9 @@ HcProxy.prototype.mount = function (router, app) {
         beforeRequest,
         beforeResponse
       };
-    }).map(u => {
+    });
+
+    apiWhiteList.forEach(u => {
       let log = u.log;
       let serviceName = u.serviceName;
       let path = u.path;
@@ -195,15 +200,16 @@ HcProxy.prototype.mount = function (router, app) {
         throw new Error(`[hc-proxy] there is no 'client' called:${client} at hc-proxy config ${serviceName}`);
       }
 
-      method.map(m => {
+      method.forEach(m => {
         m = m.toUpperCase();
         if (u.client === 'websocket') {
-          return wsHandler.push({
+          wsHandler.push({
             handler: clients[client](u, proxyHeaders),
             method,
             route,
             path
           });
+          return;
         }
 
         if (file) {
