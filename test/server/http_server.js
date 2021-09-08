@@ -34,7 +34,7 @@ exports.start = function startServer(callback) {
     socket.pipe(socket);
   });
 
-  server.listen(null, 'localhost', callback);
+  server.listen(null, '127.0.0.1', callback);
   return server;
 };
 
