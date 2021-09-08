@@ -96,7 +96,7 @@ exports.start = (port, callback) => {
       },
       websocket: {
         endpoint: 'http://100.83.167.6:7001',
-        client: 'serviceWebsocket',
+        client: 'websocket',
         accessKeyId: config.accessKeyId,
         accessKeySecret: config.accessKeySecret,
         enablePathWithMatch: true,
@@ -112,7 +112,7 @@ exports.start = (port, callback) => {
     }
   });
 
-  const server = app.listen(null, callback);
+  const server = app.listen(null, '127.0.0.1', callback);
 
   const router = express.Router();
   const mockRouter = {
