@@ -29,6 +29,7 @@ exports.start = function startServer(callback) {
     const key = req.headers['sec-websocket-key'];
 
     if(req.url.startsWith('/service-ws')) {
+      console.log(req.headers);
       if(!req.headers.signature) {
         return socket.write('HTTP/1.1 404');
       }
