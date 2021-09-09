@@ -284,7 +284,6 @@ describe('开始测试', function () {
 
 
     it('service-websocket', function (done) {
-      this.timeout(1000 * 10);
       const options = {
         port: proxyInstance.address().port,
         hostname: '127.0.0.1',
