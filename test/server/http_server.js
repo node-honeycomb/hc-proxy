@@ -28,6 +28,12 @@ exports.start = function startServer(callback) {
   server.on('upgrade', (req, socket, head) => {
     const key = req.headers['sec-websocket-key'];
 
+    if(req.url.startsWith('/service-ws')) {
+      if(!req.headers.signature) {
+        return socket.write('HTTP/1.1 404');
+      }
+    }
+
     const digest = crypto.createHash('sha1')
       .update(key + GUID)
       .digest('base64');

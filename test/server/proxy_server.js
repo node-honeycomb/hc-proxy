@@ -97,8 +97,6 @@ exports.start = (port, callback) => {
       websocket: {
         endpoint: 'http://localhost:' + port,
         client: 'websocket',
-        accessKeyId: config.accessKeyId,
-        accessKeySecret: config.accessKeySecret,
         enablePathWithMatch: true,
         api: [
           '/ws',
@@ -109,7 +107,17 @@ exports.start = (port, callback) => {
           },
           '/ws2/:id/test'
         ]
-      }
+      },
+      serviceWebsocket: {
+        endpoint: 'http://localhost:' + port,
+        client: 'serviceWebsocket',
+        accessKeyId: config.accessKeyId,
+        accessKeySecret: config.accessKeySecret,
+        enablePathWithMatch: true,
+        api: [
+          '/service-ws'
+        ]
+      }      
     }
   });
 
