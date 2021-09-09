@@ -1,4 +1,3 @@
-const WS = require('ws');
 const errorProxy = require('./server/error_proxy');
 const httpServer = require('./server/http_server');
 const proxyServer = require('./server/proxy_server');
