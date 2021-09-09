@@ -1,5 +1,4 @@
-'use strict';
-
+const WS = require('ws');
 const errorProxy = require('./server/error_proxy');
 const httpServer = require('./server/http_server');
 const proxyServer = require('./server/proxy_server');
@@ -37,7 +36,11 @@ describe('开始测试', function () {
     before((done) => {
       httpInstance = httpServer.start(function () {
         const httpPort = httpInstance.address().port;
-        proxyInstance = proxyServer.start(httpPort, done);
+        proxyInstance = proxyServer.start(httpPort, () => {
+          console.log(`proxy server start on port ${proxyInstance.address().port}`);
+
+          done();
+        });
       });
     });
 
@@ -155,6 +158,7 @@ describe('开始测试', function () {
           socket.end();
           done();
         });
+
         socket.write(testStr);
       });
     });
@@ -182,12 +186,13 @@ describe('开始测试', function () {
         });
         socket.write(testStr);
       });
+
     });
 
     it('websocket', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws',
         headers: {
           'Connection': 'Upgrade',
@@ -212,7 +217,7 @@ describe('开始测试', function () {
     it('websocket with defaultQuery 1', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws1?a=2',
         headers: {
           'Connection': 'Upgrade',
@@ -237,7 +242,7 @@ describe('开始测试', function () {
     it('websocket with defaultQuery 2', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws1?a=2',
         headers: {
           'Connection': 'Upgrade',
@@ -262,7 +267,7 @@ describe('开始测试', function () {
     it('websocket wrong', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws_wrong',
         headers: {
           'Connection': 'Upgrade',

@@ -95,13 +95,14 @@ exports.start = (port, callback) => {
         ]
       },
       websocket: {
-        endpoint: 'http://100.83.167.6:7001',
+        endpoint: 'http://localhost:' + port,
         client: 'websocket',
         accessKeyId: config.accessKeyId,
         accessKeySecret: config.accessKeySecret,
         enablePathWithMatch: true,
         api: [
-          '/zerg_terminal/tty',
+          '/ws',
+          '/ws3/:a',
           {
             path: '/ws1',
             defaultQuery: 'a=1&b=2&c=3'
