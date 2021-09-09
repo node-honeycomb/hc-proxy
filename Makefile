@@ -6,6 +6,9 @@ test:
 cover:
 	@npx nyc mocha $(TEST) -t 10000 --exit
 
+github_install:
+	@npm install
+
 install:
 	@npm install --registry=https://registry.npm.taobao.org
 
