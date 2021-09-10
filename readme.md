@@ -179,7 +179,7 @@ options.service 详情
     headerExtension: ${headerExtension},
     /* 选填，透传的header列表，同 hc-service-client 配置，见文档: https://www.npmjs.com/package/hc-service-client */
     headers: {Array},
-    /* 可选，发起请求的agent，目前只支持'appClient' / 'http' / 'websocket'，默认为'appClient'，其中 appClient 带了honeycomb体系中的签名逻辑 */
+    /* 可选，发起请求的agent，目前只支持'appClient' / 'http' / 'websocket' / 'serviceWebsocket'，默认为'appClient'，其中 appClient 和 serviceWebsocket 带了honeycomb体系中的签名逻辑 */
     client: ${client},
     /* 接口超时时间，单位毫秒 */
     timeout: ${timeout},

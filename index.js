@@ -12,8 +12,10 @@ const clients  = {
   appClient: require('./lib/service_client'),
   serviceClient: require('./lib/service_client'),
   http: require('./lib/urllib'),
-  websocket: require('./lib/websocket')
+  websocket: require('./lib/websocket'),
+  serviceWebsocket: require('./lib/service_websocket')
 };
+
 const methods = ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
 
 /**
@@ -132,7 +134,7 @@ HcProxy.prototype.mount = function (router, app) {
         if (u.file) {
           u.method = ['POST']
         } else {
-          u.method = client === 'websocket' ? ['GET'] : ['ALL'];
+          u.method = ['websocket', 'serviceWebsocket'].includes(client) ? ['GET'] : ['ALL'];
         }
       }
       let method = u.method;
@@ -204,7 +206,7 @@ HcProxy.prototype.mount = function (router, app) {
 
       method.forEach(m => {
         m = m.toUpperCase();
-        if (u.client === 'websocket') {
+        if (['websocket', 'serviceWebsocket'].includes(u.client)) {
           wsHandler.push({
             handler: clients[client](u, proxyHeaders),
             method,
@@ -255,6 +257,7 @@ HcProxy.prototype.mount = function (router, app) {
   if (wsHandler.length > 0) {
     function addUpgradeListener() {
       app.server.on('upgrade', function (req, socket, head) {
+
         const urlInfo = url.parse(req.url);
         const requestPath = req.url;
         let path = '';

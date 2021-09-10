@@ -1,5 +1,3 @@
-'use strict';
-
 const errorProxy = require('./server/error_proxy');
 const httpServer = require('./server/http_server');
 const proxyServer = require('./server/proxy_server');
@@ -37,7 +35,11 @@ describe('开始测试', function () {
     before((done) => {
       httpInstance = httpServer.start(function () {
         const httpPort = httpInstance.address().port;
-        proxyInstance = proxyServer.start(httpPort, done);
+        proxyInstance = proxyServer.start(httpPort, () => {
+          console.log(`proxy server start on port ${proxyInstance.address().port}`);
+
+          done();
+        });
       });
     });
 
@@ -155,6 +157,7 @@ describe('开始测试', function () {
           socket.end();
           done();
         });
+
         socket.write(testStr);
       });
     });
@@ -182,12 +185,13 @@ describe('开始测试', function () {
         });
         socket.write(testStr);
       });
+
     });
 
     it('websocket', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws',
         headers: {
           'Connection': 'Upgrade',
@@ -212,7 +216,7 @@ describe('开始测试', function () {
     it('websocket with defaultQuery 1', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws1?a=2',
         headers: {
           'Connection': 'Upgrade',
@@ -237,7 +241,7 @@ describe('开始测试', function () {
     it('websocket with defaultQuery 2', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws1?a=2',
         headers: {
           'Connection': 'Upgrade',
@@ -262,7 +266,7 @@ describe('开始测试', function () {
     it('websocket wrong', function (done) {
       const options = {
         port: proxyInstance.address().port,
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         path: '/api/proxy/websocket/ws_wrong',
         headers: {
           'Connection': 'Upgrade',
@@ -274,9 +278,37 @@ describe('开始测试', function () {
         assert(res.statusCode === 404);
         done();
       });
+
       req.end();
     });
 
+
+    it('service-websocket', function (done) {
+      const options = {
+        port: proxyInstance.address().port,
+        hostname: '127.0.0.1',
+        path: '/api/proxy/serviceWebsocket/service-ws',
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+      };
+
+      const req = http.request(options);
+      req.end();
+
+      req.on('upgrade', (res, socket, upgradeHead) => {
+        const testStr = 'test string!!!';
+
+        socket.on('data', function (data) {
+          assert(data.toString() === testStr);
+          socket.end();
+          done();
+        });
+        socket.write(testStr);
+      });
+    });
+    
     it.skip('azk service should be ok', function (done) {
       request(proxyInstance).get('/api/proxy/app_client/alg/categories').query({
         scopeId: 'dtboost',

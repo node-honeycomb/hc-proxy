@@ -1,10 +1,9 @@
-'use strict';
-const http = require('http');
 const stream = require('stream');
 const express = require('express');
 const app = express();
 const config = require('../config');
-// const expressWs = require('express-ws')(app);
+
+
 exports.start = (port, callback) => {
   const Proxy = require('../../');
   const proxyInstance = new Proxy({
@@ -77,7 +76,7 @@ exports.start = (port, callback) => {
             }
           },
           {
-            path: '/query_star/*'
+            path: '/query_star/:star'
           },
           {
             path: '/upload/pipe',
@@ -101,18 +100,28 @@ exports.start = (port, callback) => {
         enablePathWithMatch: true,
         api: [
           '/ws',
+          '/ws3/:a',
           {
             path: '/ws1',
             defaultQuery: 'a=1&b=2&c=3'
           },
-          '/ws2/:id/test',
-          '/ws3/*'
+          '/ws2/:id/test'
         ]
-      }
+      },
+      serviceWebsocket: {
+        endpoint: 'http://localhost:' + port,
+        client: 'serviceWebsocket',
+        accessKeyId: config.accessKeyId,
+        accessKeySecret: config.accessKeySecret,
+        enablePathWithMatch: true,
+        api: [
+          '/service-ws'
+        ]
+      }      
     }
   });
 
-  const server = app.listen(null, callback);
+  const server = app.listen(null, '127.0.0.1', callback);
 
   const router = express.Router();
   const mockRouter = {
