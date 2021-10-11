@@ -163,6 +163,7 @@ HcProxy.prototype.mount = function (router, app) {
       let beforeRequest = u.beforeRequest;
       let beforeResponse = u.beforeResponse;
       let statusCode = u.return;
+      let serviceOpt = u.serviceOpt || service.serviceOpt || {}
       
       return {
         serviceName,
@@ -186,7 +187,8 @@ HcProxy.prototype.mount = function (router, app) {
         defaultErrorCode,
         statusCode,
         beforeRequest,
-        beforeResponse
+        beforeResponse,
+        serviceOpt,
       };
     });
 
