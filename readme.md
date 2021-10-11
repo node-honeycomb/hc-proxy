@@ -29,6 +29,16 @@ const proxyInstance = new Proxy({
       api: [
         '/api/bbb'
       ]
+    },
+    dtboostTest: {
+      endponit: 'http://localhost:8007/',
+      client: 'serviceClient',
+      api: [
+        '/test',
+      ],
+      serviceOpt: { // client 代理时会合并以下配置
+        pipe: false,
+      },
     }
   },
   headers: [
