@@ -223,7 +223,7 @@ HcProxy.prototype.mount = function (router, app) {
             throw new Error(`[hc-proxy] file options should be used with PUT / POST / PATCH method, current method is ${m}, at ${serviceName}`);
           } else {
             let fileMid = multer({
-              storage: multer.memoryStorage(),
+              storage: multer.diskStorage({}),
               limits: {
                 fileSize: _.get(file, 'maxFileSize')
               }
