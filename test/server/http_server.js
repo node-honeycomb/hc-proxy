@@ -16,6 +16,7 @@ exports.start = function startServer(callback) {
         req.files.forEach((file) => {
           delete file.buffer;
         });
+
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify(req.files, null, 2));
       });

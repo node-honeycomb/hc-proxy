@@ -85,7 +85,8 @@ describe('开始测试', function () {
         .post('/api/proxy/urllib_proxy/upload')
         .field('tenantCode', 'dtboost')
         .attach('file', './test/main.test.js')
-        .expect(200).end(function (err, res) {
+        .expect(200)
+        .end(function (err, res) {
           assert(res.body[0].originalname === 'main.test.js');
           done();
         });
@@ -96,7 +97,8 @@ describe('开始测试', function () {
         .post('/api/proxy/urllib_proxy/upload_limited')
         .field('tenantCode', 'dtboost')
         .attach('file', './test/main.test.js')
-        .expect(500).end(function (err, res) {
+        .expect(500)
+        .end(function (err, res) {
           done();
         });
     });
