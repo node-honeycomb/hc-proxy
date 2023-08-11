@@ -3,6 +3,25 @@ const express = require('express');
 const app = express();
 const config = require('../config');
 
+const upperCaseTransform = new Transform({
+  transform(chunk, encoding, callback) {
+    // 转换后的数据
+    this.push(Buffer.from(chunk.toString('utf-8').toUpperCase()));
+    // 原始的数据
+    // this.push(chunk);
+    callback();
+  }
+});
+
+const upperCaseTransform1 = new Transform({
+  transform(chunk, encoding, callback) {
+    // 转换后的数据
+    this.push(Buffer.from(chunk.toString('utf-8').toUpperCase()));
+    // 原始的数据
+    // this.push(chunk);
+    callback();
+  }
+});
 
 exports.start = (port, callback) => {
   const Proxy = require('../../');
@@ -40,7 +59,7 @@ exports.start = (port, callback) => {
               const response = new stream.PassThrough();
               return response.end(Buffer.from(JSON.stringify(req.headers)));
             }
-          }          
+          }
         ]
       },
       urllib_proxy: {
@@ -117,7 +136,27 @@ exports.start = (port, callback) => {
         api: [
           '/service-ws'
         ]
-      }      
+      },
+      websocketTransform: {
+        endpoint: 'http://localhost:' + port,
+        client: 'websocket',
+        enablePathWithMatch: true,
+        transformPipe: upperCaseTransform,
+        api: [
+          '/ws',
+        ]
+      },
+      serviceWebsocketTransform: {
+        endpoint: 'http://localhost:' + port,
+        client: 'serviceWebsocket',
+        accessKeyId: config.accessKeyId,
+        accessKeySecret: config.accessKeySecret,
+        transformPipe: upperCaseTransform1,
+        enablePathWithMatch: true,
+        api: [
+          '/ws',
+        ]
+      },
     }
   });
 

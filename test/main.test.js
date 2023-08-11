@@ -284,6 +284,55 @@ describe('开始测试', function () {
       req.end();
     });
 
+    it('websocket with transform', function (done) {
+      const options = {
+        port: proxyInstance.address().port,
+        hostname: '127.0.0.1',
+        path: '/api/proxy/websocketTransform/ws',
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+      };
+
+      const req = http.request(options);
+      req.end();
+
+      req.on('upgrade', (res, socket, upgradeHead) => {
+        const testStr = 'test string!!!';
+        socket.on('data', function (data) {
+          assert(data.toString() === testStr.toUpperCase());
+          socket.end();
+          done();
+        });
+        socket.write(testStr);
+      });
+    });
+
+    it('services websocket with transform', function (done) {
+      const options = {
+        port: proxyInstance.address().port,
+        hostname: '127.0.0.1',
+        path: '/api/proxy/serviceWebsocketTransform/ws',
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+      };
+
+      const req = http.request(options);
+      req.end();
+
+      req.on('upgrade', (res, socket, upgradeHead) => {
+        const testStr = 'test string!!!';
+        socket.on('data', function (data) {
+          assert(data.toString() === testStr.toUpperCase());
+          socket.end();
+          done();
+        });
+        socket.write(testStr);
+      });
+    });
 
     it('service-websocket', function (done) {
       const options = {
@@ -310,7 +359,7 @@ describe('开始测试', function () {
         socket.write(testStr);
       });
     });
-    
+
     it.skip('azk service should be ok', function (done) {
       request(proxyInstance).get('/api/proxy/app_client/alg/categories').query({
         scopeId: 'dtboost',

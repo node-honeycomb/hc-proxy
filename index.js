@@ -25,7 +25,7 @@ const methods = ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
  *
  *          headers {Array} proxy headers to paas through
  *          proxyPrefix {String} url prefix, default /api/proxy
- * 
+ *
  */
 function HcProxy(options) {
   if (!options.service) {
@@ -86,7 +86,7 @@ HcProxy.prototype.mount = function (router, app) {
     let service = proxyService[k];
     let api = service.api || ['/'];
     let routePrefix = typeof service.routePrefix === 'string' ? service.routePrefix : this.proxyPrefix;
-    
+
     // 黑名单
     let exclude = service.exclude || [];
     if (exclude.length > 0) {
@@ -116,7 +116,7 @@ HcProxy.prototype.mount = function (router, app) {
       if (typeof u === 'string') u = {path: u};
       let path = u.path ? utils.trim(u.path) : '/';
       let pipe = u.pipe || false;
-      
+
       if (service.enablePathWithMatch || service._isIgnoreWhiteList) {
         // 允许 * , 啥也不做
       } else {
@@ -164,8 +164,9 @@ HcProxy.prototype.mount = function (router, app) {
       let beforeResponse = u.beforeResponse;
       let statusCode = u.return;
       let serviceOpt = u.serviceOpt || service.serviceOpt || {}
-      
+
       return {
+        transformPipe: service.transformPipe,
         serviceName,
         pipe,
         path,
@@ -234,7 +235,7 @@ HcProxy.prototype.mount = function (router, app) {
         }
         if (statusCode) {
           router[m.toLowerCase()](router, (req, res, next) => {
-            res.statusCode = statusCode; 
+            res.statusCode = statusCode;
             res.end();
           });
         } else {
@@ -298,11 +299,11 @@ HcProxy.prototype.mount = function (router, app) {
         }
       });
     }
- 
+
     if (!app) {
       throw utils.errorWrapper('[hc-proxy]: 使用websocket时请传入 honeybee app 实例:  dtboostProxy(router, app);');
     }
- 
+
     if (app.server) {
       addUpgradeListener();
     } else {
