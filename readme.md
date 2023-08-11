@@ -8,6 +8,7 @@ api代理模块，node server端代理请求后端service用。
 2. 整理远程调用的服务，给每个服务起个英文名称，比如： 上面的两个服务  视频服务(video)  音乐服务(music)  聊天服务(chat)
 3. 配置在router.js中，进行如下配置
 4. 请注意，为了确保安全，所有api只支持白名单
+5. 333
 
 ```js
 // router.js
