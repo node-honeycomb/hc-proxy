@@ -2,6 +2,8 @@ const stream = require('stream');
 const express = require('express');
 const app = express();
 const config = require('../config');
+const { Transform } = require('stream');
+const { Buffer } = require('buffer');
 
 const upperCaseTransform = new Transform({
   transform(chunk, encoding, callback) {
