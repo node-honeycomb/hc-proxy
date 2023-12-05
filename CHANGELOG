@@ -5,3 +5,4 @@
 1.0.5 add headerExtension to `http` and `websocket` mode.
 1.0.7 error message typo.
 1.0.10 config.defaultErrorCode
+2.0.20 feature: Add more logInfo config

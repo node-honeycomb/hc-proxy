@@ -239,7 +239,17 @@ options.service 详情
         /* delete方法使用querystring代理, 默认为true */
         useQuerystringInDelete: {Boolean},
         /** 用户覆盖的urllibOption，覆盖系统默认值，优先级: service.api.urllibOption > service.urllibOption > hc-proxy默认设置 */
-        urllibOption: {Object}
+        urllibOption: {Object},
+        /** filter全部命中之后才会出日志
+         * {
+         *  filter: {
+         *    headers: {
+         *      key: value
+         *    }
+         *  }
+         * }
+         */
+        moreDebuggerInfo: {Object}
       }
     ]
   }
